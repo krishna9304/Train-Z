@@ -1,13 +1,14 @@
-import { model, Number, Schema } from "mongoose";
+import { model, Number, ObjectId, Schema } from "mongoose";
 
 export interface MentorInterface extends Schema {
-  name: String;
-  username: String;
-  email: String;
-  password: String;
-  phone: String;
-  dpURL: String;
-  expertise: [String];
+  _id: ObjectId;
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  phone: string;
+  dpURL: string;
+  expertise: [string];
   availability: Number;
   createdAt: Date;
   updatedAt: Date;
