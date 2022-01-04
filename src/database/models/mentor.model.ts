@@ -12,6 +12,8 @@ export interface MentorInterface extends Document {
   availability: Number;
   createdAt: Date;
   updatedAt: Date;
+  emailVerified: boolean;
+  phoneVerified: boolean;
 }
 
 const Mentor: Schema = new Schema({
@@ -25,6 +27,8 @@ const Mentor: Schema = new Schema({
   availability: { type: Number, required: true },
   createdAt: { type: Date, required: true },
   updatedAt: { type: Date, required: false },
+  emailVerified: { type: Boolean, default: false },
+  phoneVerified: { type: Boolean, default: false },
 });
 
 export default model("mentor", Mentor);

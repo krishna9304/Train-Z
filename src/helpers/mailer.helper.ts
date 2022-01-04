@@ -1,9 +1,16 @@
+import { ObjectId } from "mongoose";
 import nodemailer, { Transporter } from "nodemailer";
+import { tokenGenerator } from "./jwt.helper";
 
 export const emailVerificationBody = (
   username: string,
-  verificationlink: string
+  _id: ObjectId,
+  userType: string
 ): string => {
+  const verifivationToken: string = tokenGenerator(
+    _id,
+    userType + "_EMAIL_VERIFICATION"
+  );
   return `<div style="justify-content: center; align-items: center; flex-direction: column; text-align: center; background-color: #191920; color: #fff; padding: 20px;" >
         <h1 style="color: #fff;">
             Hi ${username},
@@ -19,7 +26,7 @@ export const emailVerificationBody = (
           Click below to confirm your email address:
           <br/>
           <div style="padding:1rem;">
-            <a href="${verificationlink}" style="padding:0.5rem; padding-top:0.1rem; padding-bottom:0.1rem; border-radius: 4px; background-color: #4338ca; color: #ffffff; text-decoration:none; font-size: 20pt" >
+            <a href="http://localhost:8080/mentor/verifyemail/${verifivationToken}" style="padding:0.5rem; padding-top:0.1rem; padding-bottom:0.1rem; border-radius: 4px; background-color: #4338ca; color: #ffffff; text-decoration:none; font-size: 20pt" >
                 VERIFY NOW
           </a>
           </div>
@@ -50,7 +57,7 @@ function mail(to: string, body: string): Promise<any> {
       .sendMail({
         from: `"Train-Z" ${process.env.MAIL}`,
         to: to,
-        subject: "Account Verification",
+        subject: "Train-Z",
         html: body,
       })
       .then(resolve)

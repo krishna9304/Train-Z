@@ -6,5 +6,6 @@ mentorRouter.post("/signup", authController.signUp);
 mentorRouter.post("/signin", authController.signIn);
 mentorRouter.post("/exists", authController.exists);
 mentorRouter.post("/verify", authController.verifyJWT);
+mentorRouter.get("/verifyemail/:verificationtoken", authController.verifyEmail);
 
 export default mentorRouter;

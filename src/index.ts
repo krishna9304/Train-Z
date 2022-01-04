@@ -6,15 +6,7 @@ import mainRouter from "./routes";
 import bodyParser from "body-parser";
 import response from "./utils/response";
 import timeout from "connect-timeout";
-import mail, { emailVerificationBody } from "./helpers/mailer.helper";
 import { ISDEV, PORT } from "./constants";
-
-mail(
-  "mrcircuit1234@gmail.com",
-  emailVerificationBody("Mind Bender", "https://google.com")
-)
-  .then(console.log)
-  .catch(console.error);
 
 // Main Application
 const app: Application = express();
@@ -25,7 +17,7 @@ app.use(bodyParser());
 app.use(haltOnTimedout);
 app.use(haltOnTimedout);
 
-function haltOnTimedout(req: Request, res: Response, next: NextFunction) {
+function haltOnTimedout(req: Request, _: Response, next: NextFunction) {
   if (!req.timedout) next();
 }
 
@@ -40,6 +32,7 @@ app.use("*", timeout("1200s"), route404);
 
 // Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(colors.bgRed(err));
   response(res, 400, "Something went wrong", {
     err: typeof err === "object" ? err : [err],
   });
@@ -47,7 +40,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 // TODO: init sockets
 const server: Server = app.listen(PORT, () => {
-  // ISDEV && console.clear();
+  ISDEV && console.clear();
   console.log(
     ` Server running on PORT \n\t${
       ISDEV ? colors.cyan("http://localhost:8080") : colors.cyan(PORT)

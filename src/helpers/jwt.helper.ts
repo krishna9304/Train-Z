@@ -1,14 +1,14 @@
 import { ObjectId } from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
-import jwt, { JwtPayload, VerifyErrors } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
-export const tokenGenerator = (_id: ObjectId, username: String): string => {
+export const tokenGenerator = (_id: ObjectId, str2: String): string => {
   try {
     const token: string = jwt.sign(
       {
         _id,
-        username,
+        str2,
       },
       process.env.JWT_SECRET + "", //! requires JWT_SECRET in .env
       {

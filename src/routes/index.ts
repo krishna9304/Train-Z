@@ -1,7 +1,7 @@
 import Router, { Application } from "express";
-import mentorRouter from "./mentor.routes";
+import authRouter from "./auth.routes";
 const mainRouter: Application = Router();
 
-mainRouter.use("/mentor", mentorRouter);
+mainRouter.use("/mentor", authRouter);
 
 export default mainRouter;
