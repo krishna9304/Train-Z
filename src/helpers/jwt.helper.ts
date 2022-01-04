@@ -21,12 +21,14 @@ export const tokenGenerator = (_id: ObjectId, username: String): string => {
   }
 };
 
-interface DecoderCallback {
-  (err: VerifyErrors | null, finalDecoded: JwtPayload | undefined): any;
-}
-
-export const tokenDecoder = (token: string, cb: DecoderCallback) => {
-  jwt.verify(token, process.env.JWT_SECRET + "", function (err, decoded) {
-    cb(err, decoded);
+export const tokenDecoder = (token: string): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.JWT_SECRET + "", function (err, decoded) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(decoded);
+      }
+    });
   });
 };

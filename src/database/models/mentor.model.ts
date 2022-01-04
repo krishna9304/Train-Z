@@ -1,6 +1,6 @@
-import { model, Number, ObjectId, Schema } from "mongoose";
+import { Document, model, Number, ObjectId, Schema } from "mongoose";
 
-export interface MentorInterface extends Schema {
+export interface MentorInterface extends Document {
   _id: ObjectId;
   name: string;
   username: string;
@@ -14,7 +14,7 @@ export interface MentorInterface extends Schema {
   updatedAt: Date;
 }
 
-const Mentor: MentorInterface = new Schema({
+const Mentor: Schema = new Schema({
   name: { type: String, required: true },
   username: { type: String, required: true },
   email: { type: String, required: true },
@@ -25,10 +25,6 @@ const Mentor: MentorInterface = new Schema({
   availability: { type: Number, required: true },
   createdAt: { type: Date, required: true },
   updatedAt: { type: Date, required: false },
-}) as MentorInterface;
-
-Mentor.virtual("firstName").get((doc: any): any => {
-  return (doc?.name as string).split(" ")[0];
 });
 
 export default model("mentor", Mentor);

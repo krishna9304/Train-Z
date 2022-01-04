@@ -15,20 +15,22 @@ export const createMentor = (
     }: isValidMentorInterface = isValidMentor(data);
 
     if (isValid) {
-      mentorExists(data.username).then((exists) => {
-        if (exists) {
-          reject("User already exists");
-        } else {
-          hashPassword(finalData.password + "")
-            .then((hash) => {
-              finalData.password = hash + "";
-              const mentor = new mentorModel(finalData);
-              mentor.save();
-              resolve(mentor);
-            })
-            .catch(reject);
-        }
-      });
+      mentorExists(data.username)
+        .then((exists) => {
+          if (exists) {
+            reject("User already exists");
+          } else {
+            hashPassword(finalData.password + "")
+              .then((hash) => {
+                finalData.password = hash + "";
+                const mentor = new mentorModel(finalData);
+                mentor.save();
+                resolve(mentor);
+              })
+              .catch(reject);
+          }
+        })
+        .catch(reject);
     } else {
       reject(errs);
     }

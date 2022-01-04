@@ -1,33 +1,53 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import colors from "ansi-colors";
-import dotenv from "dotenv";
 import { Server } from "http";
 import "./database";
 import mainRouter from "./routes";
 import bodyParser from "body-parser";
 import response from "./utils/response";
+import timeout from "connect-timeout";
+import mail, { emailVerificationBody } from "./helpers/mailer.helper";
+import { ISDEV, PORT } from "./constants";
 
-dotenv.config(); //configure the ENVs
+mail(
+  "mrcircuit1234@gmail.com",
+  emailVerificationBody("Mind Bender", "https://google.com")
+)
+  .then(console.log)
+  .catch(console.error);
 
-const PORT: string = (process.env.PORT || 8080) + "";
-const ISDEV: boolean = process.env.NODE_ENV !== "production";
-
+// Main Application
 const app: Application = express();
 
+// Middlewares
+app.use(timeout("120s"));
 app.use(bodyParser());
+app.use(haltOnTimedout);
+app.use(haltOnTimedout);
 
+function haltOnTimedout(req: Request, res: Response, next: NextFunction) {
+  if (!req.timedout) next();
+}
+
+// Main routes
 app.use("/", mainRouter);
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.log(typeof err);
+// 404 Route
+const route404 = (req: Request, res: Response, next: NextFunction) => {
+  response(res, 404, "Route not Found", {});
+};
+app.use("*", timeout("1200s"), route404);
 
+// Error Handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   response(res, 400, "Something went wrong", {
     err: typeof err === "object" ? err : [err],
   });
 });
 
+// TODO: init sockets
 const server: Server = app.listen(PORT, () => {
-  ISDEV && console.clear();
+  // ISDEV && console.clear();
   console.log(
     ` Server running on PORT \n\t${
       ISDEV ? colors.cyan("http://localhost:8080") : colors.cyan(PORT)
