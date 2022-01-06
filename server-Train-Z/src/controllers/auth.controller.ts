@@ -19,22 +19,19 @@ const authController = {
       createMentor(data)
         .then((mentor) => {
           const token = tokenGenerator(mentor?._id, mentor?.username);
-          mentor.save().then((_) => {
-            sendEmailVerification(
-              mentor._id,
-              mentor.name.split(" ")[0],
-              userType
-            )
-              .then((__) => {
-                const insensitiveM = insensitiveMentor(mentor);
-                response(res, 200, "User created successfully", {
-                  token,
-                  insensitiveM,
-                  data,
-                });
-              })
-              .catch(next);
-          });
+          mentor
+            .save()
+            .then((_) => {
+              sendEmailVerification(mentor._id, userType)
+                .then((insensitivementor) => {
+                  response(res, 200, "User created successfully", {
+                    token,
+                    mentor: insensitivementor,
+                  });
+                })
+                .catch(next);
+            })
+            .catch(next);
         })
         .catch(next);
     } else if (userType === "STUDENT") {
@@ -51,7 +48,7 @@ const authController = {
     const { userType, username, password } = data;
     // @param data.userType is required to differentiate between mentor and user
     if (userType === "MENTOR") {
-      mentorExists(username)
+      mentorExists({ username })
         .then((exists) => {
           if (!exists) {
             response(res, 403, "User not found", {
@@ -62,21 +59,26 @@ const authController = {
             mentorModel
               .findOne({ username: username })
               .then((mentor: MentorInterface) => {
-                comparePassword(mentor.password, password).then((same) => {
-                  if (same) {
-                    const token = tokenGenerator(mentor?._id, mentor?.username);
-                    const insensitivementor = insensitiveMentor(mentor);
-                    response(res, 200, "User authenticated successfully", {
-                      token,
-                      insensitivementor,
-                    });
-                  } else {
-                    response(res, 403, "Wrong Password", {
-                      username,
-                      password,
-                    });
-                  }
-                });
+                comparePassword(mentor.password, password)
+                  .then((same) => {
+                    if (same) {
+                      const token = tokenGenerator(
+                        mentor?._id,
+                        mentor?.username
+                      );
+                      const insensitivementor = insensitiveMentor(mentor);
+                      response(res, 200, "User authenticated successfully", {
+                        token,
+                        insensitivementor,
+                      });
+                    } else {
+                      response(res, 403, "Wrong Password", {
+                        username,
+                        password,
+                      });
+                    }
+                  })
+                  .catch(next);
               })
               .catch(next);
           }
@@ -95,7 +97,7 @@ const authController = {
     const data = req.body;
     const { userType } = data;
     if (userType === "MENTOR") {
-      mentorExists(data.username)
+      mentorExists({ username: data.username })
         .then((exists) =>
           response(res, 200, exists ? "User exists" : "User does not exists", {
             exists,
@@ -118,23 +120,25 @@ const authController = {
     tokenDecoder(verificationtoken)
       .then((decoded) => {
         if (decoded.str2 === "MENTOR_EMAIL_VERIFICATION") {
-          mentorModel.findById(decoded._id).then((mentor: MentorInterface) => {
-            if (mentor.emailVerified) {
-              response(res, 200, "Email already verified", {
-                verificationtoken,
-              });
-            } else {
-              mentor.emailVerified = true;
-              mentor
-                .save()
-                .then(() => {
-                  console.log(mentor);
-
-                  response(res, 200, "Email Verified", {});
-                })
-                .catch(next);
-            }
-          });
+          mentorModel
+            .findById(decoded._id)
+            .then((mentor: MentorInterface) => {
+              if (mentor.emailVerified) {
+                response(res, 200, "Email already verified", {
+                  verificationtoken,
+                });
+              } else {
+                mentor.emailVerified = true;
+                const insensitivementor = insensitiveMentor(mentor);
+                mentor
+                  .save()
+                  .then(() => {
+                    response(res, 200, "Email Verified", { insensitivementor });
+                  })
+                  .catch(next);
+              }
+            })
+            .catch(next);
         } else if (decoded.str2 === "STUDENT_EMAIL_VERIFICATION") {
           //TODO: student email verification
         } else {
@@ -155,27 +159,29 @@ const authController = {
       } else {
         tokenDecoder(token)
           .then((decoded) => {
-            mentorExists(decoded.username).then((exists) => {
-              if (!exists) {
-                response(res, 403, "User not found", {
-                  token,
-                });
-              } else {
-                mentorModel
-                  .findOne({ username: decoded.username })
-                  .then((mentor: MentorInterface) => {
-                    const newToken = tokenGenerator(
-                      mentor?._id,
-                      mentor?.username
-                    );
-                    response(res, 200, "User authenticated successfully", {
-                      newToken,
-                      mentor,
-                    });
-                  })
-                  .catch(next);
-              }
-            });
+            mentorExists({ username: decoded.username })
+              .then((exists) => {
+                if (!exists) {
+                  response(res, 403, "User not found", {
+                    token,
+                  });
+                } else {
+                  mentorModel
+                    .findOne({ username: decoded.username })
+                    .then((mentor: MentorInterface) => {
+                      const newToken = tokenGenerator(
+                        mentor?._id,
+                        mentor?.username
+                      );
+                      response(res, 200, "User authenticated successfully", {
+                        newToken,
+                        mentor,
+                      });
+                    })
+                    .catch(next);
+                }
+              })
+              .catch(next);
           })
           .catch(next);
       }
@@ -186,6 +192,16 @@ const authController = {
         data,
       });
     }
+  },
+  resendEmailVerification(req: Request, res: Response, next: NextFunction) {
+    const data = req.body;
+    sendEmailVerification(data._id, data.userType)
+      .then((insensitivementor) => {
+        response(res, 200, "User created successfully", {
+          mentor: insensitivementor,
+        });
+      })
+      .catch(next);
   },
 };
 export default authController;

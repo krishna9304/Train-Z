@@ -17,19 +17,19 @@ export const emailVerificationBody = (
               Hi ${Name},
             </h1>
             <br/>
-            <p style="color: #fff">
-              Thanks for getting started with Train-Z!
-              <br/>
-              We need a little more information to complete your registration, including a confirmation of your email address. 
-            </p>
+            <p style="color: #fff; display:flex; justify-content:center; align-item:center; flex-direction:row;">
+              Thanks for getting started with Train-Z !
+            <br />
+            We need a little more information to complete your registration, including a confirmation of your email address.
+        </p>
             <br/>
             <p style="color: #fff;">
               Click below to confirm your email address:
               <br/>
               <div style="padding:1rem;">
-                <a 
+                <a
                 href="http://localhost:8080/auth/emailverification/${verificationtoken}" 
-                style="padding:0.5rem; padding-top:0.1rem; padding-bottom:0.1rem; border-radius: 4px; background-color: ##047857; color: #ffffff; text-decoration:none; font-size: 20pt" 
+                style="padding:0.5rem; padding-top:0.1rem; padding-bottom:0.1rem; border-radius: 4px; background-color: #047857; color: #ffffff; text-decoration:none; font-size: 20pt" 
                 >
                   VERIFY NOW
                 </a>

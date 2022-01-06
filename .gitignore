@@ -1,2 +1,13 @@
-node_modules/
-.env
+# SERVER
+server-Train-Z/node_modules/
+server-Train-Z/.env
+server-Train-Z/dist
+
+
+
+# CLIENT
+client-Train-Z/node_modules
+client-Train-Z/.DS_Store
+client-Train-Z/dist
+client-Train-Z/dist-ssr
+client-Train-Z/*.local

@@ -20,16 +20,24 @@ export const createMentor = (
     }: isValidMentorInterface = isValidMentor(data);
 
     if (isValid) {
-      mentorExists(data.username)
-        .then((exists) => {
-          if (exists) {
-            reject("User already exists");
+      mentorExists({ username: data.username })
+        .then((exists1) => {
+          if (exists1) {
+            reject("username not available");
           } else {
-            hashPassword(finalData.password + "")
-              .then((hash) => {
-                finalData.password = hash + "";
-                const mentor = new mentorModel(finalData);
-                resolve(mentor);
+            mentorExists({ email: data.email })
+              .then((exists2) => {
+                if (exists2) {
+                  reject("Email already registered");
+                } else {
+                  hashPassword(finalData.password + "")
+                    .then((hash) => {
+                      finalData.password = hash + "";
+                      const mentor = new mentorModel(finalData);
+                      resolve(mentor);
+                    })
+                    .catch(reject);
+                }
               })
               .catch(reject);
           }
@@ -41,10 +49,10 @@ export const createMentor = (
   });
 };
 
-export const mentorExists = (username: string): Promise<boolean> => {
+export const mentorExists = (filter: any): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     mentorModel
-      .exists({ username })
+      .exists(filter)
       .then((exists) => {
         resolve(exists);
       })
@@ -54,35 +62,43 @@ export const mentorExists = (username: string): Promise<boolean> => {
 
 export const sendEmailVerification = (
   _id: ObjectId | string,
-  username: string,
   userType: "MENTOR" | "STUDENT"
 ): Promise<any> => {
   return new Promise((resolve, reject) => {
     if (userType === "MENTOR") {
-      mentorModel
-        .findById(_id)
-        .then((mentor: MentorInterface) => {
-          if (mentor.emailVerified) {
-            reject({
-              code: 400,
-              message: "Already Verified",
-              data: {
-                _id,
-              },
-            });
-          } else {
-            mail(mentor.email, emailVerificationBody(username, _id, userType))
-              .then((_) => {
-                resolve({
-                  code: 200,
-                  message: "Email verification started",
-                  data: {
-                    email: mentor.email,
-                    _id,
-                  },
-                });
+      mentorExists({ _id })
+        .then((exists: boolean) => {
+          if (exists) {
+            mentorModel
+              .findById(_id)
+              .then((mentor: MentorInterface) => {
+                if (mentor.emailVerified) {
+                  reject({
+                    code: 400,
+                    message: "Already Verified",
+                    data: {
+                      _id,
+                    },
+                  });
+                } else {
+                  mail(
+                    mentor.email,
+                    emailVerificationBody(
+                      mentor.username.split(" ")[0],
+                      _id,
+                      userType
+                    )
+                  )
+                    .then((_) => {
+                      const insensitivementor = insensitiveMentor(mentor);
+                      resolve(insensitivementor);
+                    })
+                    .catch(reject);
+                }
               })
               .catch(reject);
+          } else {
+            reject("Mentor does not exists");
           }
         })
         .catch(reject);

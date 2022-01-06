@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div
+        style="justify-content: center; align-items: center; flex-direction: column; text-align: center; background-color: #191920; color: #fff; padding: 20px;">
+        <h1 style="color: #fff;">
+            Hi ${Name},
+        </h1>
+        <br />
+        <p style="color: #fff; display: flex; flex-direction: column;">
+            <div style="color: #fff; display: flex; justify-content: center; align-items: center; gap: 1rem;" >
+                Thanks for getting started with Train-Z !<img style="width: 2rem; height: 2rem;"
+                    src="https://cdn.filestackcontent.com/ARVNFDkIFTCy2nOXvYSoLz/security=policy:eyJleHBpcnkiOjE2NTM5NDgwMDB9,signature:08aafeb16f44bba501b0ddd33d6932fdd523af5bdf62a163b78f0a7e5eb54be7/tneuAfIkROSSdTquBp7u" />
+            </div>
+            <br />
+            We need a little more information to complete your registration, including a confirmation of your email address.
+        </p>
+        <br />
+        <p style="color: #fff;">
+            Click below to confirm your email address:
+            <br />
+        <div style="padding:1rem;">
+            <a href="http://localhost:8080/auth/emailverification/${verificationtoken}"
+                style="padding:0.5rem; padding-top:0.1rem; padding-bottom:0.1rem; border-radius: 4px; background-color: #047857; color: #ffffff; text-decoration:none; font-size: 20pt">
+                VERIFY NOW
+            </a>
+        </div>
+        <br />
+        <p style="color: #fff">
+            If you have problems, please open the above URL in your web browser.
+            <br />
+            If you did not signup for Train-Z, you should just ignore this message.
+        </p>
+        </p>
+        <p style="color: #fff">
+            This is an auto-generated mail used for Train-Z
+        </p>
+    </div>
+</body>
+</html>

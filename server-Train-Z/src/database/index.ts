@@ -5,14 +5,12 @@ dotenv.config();
 
 const uri: string = `mongodb+srv://${process.env.USERNAME}:${process.env.PASS}@mycluster.sxsst.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`; //! requires USERNAME & PASS in .env
 
-console.log(colors.bgRedBright(uri));
-
 connect(uri);
 
 const db: Connection = connection;
 
 db.on("open", () => {
-  console.log(colors.cyan("\tConnected to the database successfully"));
+  console.log(colors.bgCyan("\tConnected to the database successfully"));
 });
 
 db.once("error", () => {
