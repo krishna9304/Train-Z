@@ -3,8 +3,11 @@ import isValidMentor, {
   isValidMentorInterface,
 } from "../helpers/validate.helper";
 import { hashPassword } from "../helpers/password.helper";
-import { ObjectId } from "mongoose";
-import mail, { emailVerificationBody } from "../helpers/mailer.helper";
+import { FilterQuery, isValidObjectId, ObjectId } from "mongoose";
+import mail, {
+  emailVerificationBody,
+  resetPasswordBody,
+} from "../helpers/mailer.helper";
 import response from "../utils/response";
 import { Response } from "express";
 import e from "connect-timeout";
@@ -49,7 +52,9 @@ export const createMentor = (
   });
 };
 
-export const mentorExists = (filter: any): Promise<boolean> => {
+export const mentorExists = (
+  filter: FilterQuery<MentorInterface>
+): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     mentorModel
       .exists(filter)
@@ -65,6 +70,7 @@ export const sendEmailVerification = (
   userType: "MENTOR" | "STUDENT"
 ): Promise<any> => {
   return new Promise((resolve, reject) => {
+    if (!isValidObjectId(_id)) reject("Invalid ID");
     if (userType === "MENTOR") {
       mentorExists({ _id })
         .then((exists: boolean) => {
@@ -102,6 +108,39 @@ export const sendEmailVerification = (
           }
         })
         .catch(reject);
+    } else if (userType === "STUDENT") {
+      // TODO: student send email verification
+    } else {
+      reject("Invalid user type");
+    }
+  });
+};
+
+export const sendPasswordReset = (
+  _id: ObjectId,
+  userType: "MENTOR" | "STUDENT"
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    if (userType === "MENTOR") {
+      mentorExists({ _id })
+        .then((exists) => {
+          if (exists) {
+            mentorModel
+              .findById(_id)
+              .then((mentor) => {
+                mail(
+                  mentor.email,
+                  resetPasswordBody(mentor.name.split(" ")[0], _id, userType)
+                ).then(resolve);
+              })
+              .catch(reject);
+          } else reject("Mentor not found");
+        })
+        .catch(reject);
+    } else if (userType === "STUDENT") {
+      // TODO: student reset password
+    } else {
+      reject("Invalid user type");
     }
   });
 };

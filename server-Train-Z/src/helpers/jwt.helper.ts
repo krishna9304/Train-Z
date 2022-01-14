@@ -24,13 +24,19 @@ export const tokenGenerator = (
   }
 };
 
-export const tokenDecoder = (token: string): Promise<any> => {
+export const tokenDecoder = (
+  token: string
+): Promise<{ _id: ObjectId; str2: string }> => {
   return new Promise((resolve, reject) => {
     jwt.verify(token, process.env.JWT_SECRET + "", function (err, decoded) {
       if (err) {
         reject(err);
       } else {
-        resolve(decoded);
+        const finalDecoded: { _id: ObjectId; str2: string } = {
+          _id: decoded?._id,
+          str2: decoded?.str2,
+        };
+        resolve(finalDecoded);
       }
     });
   });

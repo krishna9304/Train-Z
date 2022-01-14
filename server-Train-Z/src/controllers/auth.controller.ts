@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from "express";
+import { isValidObjectId } from "mongoose";
 import mentorModel, { MentorInterface } from "../database/models/mentor.model";
 import { tokenDecoder, tokenGenerator } from "../helpers/jwt.helper";
-import { comparePassword } from "../helpers/password.helper";
+import { comparePassword, hashPassword } from "../helpers/password.helper";
 import {
   createMentor,
   mentorExists,
   sendEmailVerification,
   insensitiveMentor,
+  sendPasswordReset,
 } from "../services/mentor.services";
 import response from "../utils/response";
 
@@ -113,7 +115,6 @@ const authController = {
       });
     }
   },
-  verifyOTP() {},
   verifyEmail(req: Request, res: Response, next: NextFunction) {
     // @param data.userType is required to differentiate between mentor and user
     const { verificationtoken } = req.params;
@@ -153,38 +154,37 @@ const authController = {
     // @param data.userType is required to differentiate between mentor and user
     const data = req.body;
     const { userType, token } = data;
+    if (!token) {
+      response(res, 403, "token is required", data);
+    }
     if (userType === "MENTOR") {
-      if (!token) {
-        response(res, 403, "token is required", data);
-      } else {
-        tokenDecoder(token)
-          .then((decoded) => {
-            mentorExists({ username: decoded.username })
-              .then((exists) => {
-                if (!exists) {
-                  response(res, 403, "User not found", {
-                    token,
-                  });
-                } else {
-                  mentorModel
-                    .findOne({ username: decoded.username })
-                    .then((mentor: MentorInterface) => {
-                      const newToken = tokenGenerator(
-                        mentor?._id,
-                        mentor?.username
-                      );
-                      response(res, 200, "User authenticated successfully", {
-                        newToken,
-                        mentor,
-                      });
-                    })
-                    .catch(next);
-                }
-              })
-              .catch(next);
-          })
-          .catch(next);
-      }
+      tokenDecoder(token)
+        .then((decoded) => {
+          mentorExists({ username: decoded.str2 })
+            .then((exists) => {
+              if (!exists) {
+                response(res, 403, "User not found", {
+                  token,
+                });
+              } else {
+                mentorModel
+                  .findOne({ username: decoded.str2 })
+                  .then((mentor: MentorInterface) => {
+                    const newToken = tokenGenerator(
+                      mentor?._id,
+                      mentor?.username
+                    );
+                    response(res, 200, "User authenticated successfully", {
+                      newToken,
+                      mentor,
+                    });
+                  })
+                  .catch(next);
+              }
+            })
+            .catch(next);
+        })
+        .catch(next);
     } else if (userType === "STUDENT") {
       //TODO: student verifyJWT
     } else {
@@ -194,14 +194,96 @@ const authController = {
     }
   },
   resendEmailVerification(req: Request, res: Response, next: NextFunction) {
+    const { _id, userType } = req.body;
+    const errs: string[] = [];
+    if (!_id) {
+      errs.push("User id is required");
+    } else if (!isValidObjectId(_id)) {
+      errs.push("Invalid User id");
+    }
+    if (!userType) {
+      errs.push("User type is required");
+    } else if (userType !== "MENTOR" && userType !== "STUDENT") {
+      errs.push("Invalid Mentor");
+    }
+    if (errs.length) {
+      response(res, 400, "Invalid data", { errs });
+    } else {
+      sendEmailVerification(_id, userType)
+        .then((insensitivementor) => {
+          response(res, 200, "User created successfully", {
+            mentor: insensitivementor,
+          });
+        })
+        .catch(next);
+    }
+  },
+  sendResetPassword(req: Request, res: Response, next: NextFunction) {
+    const { _id, userType } = req.body;
+    const errs: string[] = [];
+    if (!_id) {
+      errs.push("User id is required");
+    } else if (!isValidObjectId(_id)) {
+      errs.push("Invalid User id");
+    }
+    if (!userType) {
+      errs.push("User type is required");
+    } else if (userType !== "MENTOR" && userType !== "STUDENT") {
+      errs.push("Invalid Mentor");
+    }
+    if (errs.length) {
+      response(res, 400, "Invalid data", { errs });
+    } else {
+      sendPasswordReset(_id, userType)
+        .then((insensitivementor) => {
+          response(res, 200, "Email sent", {
+            mentor: insensitivementor,
+          });
+        })
+        .catch(next);
+    }
+  },
+  resetPassword(req: Request, res: Response, next: NextFunction) {
     const data = req.body;
-    sendEmailVerification(data._id, data.userType)
-      .then((insensitivementor) => {
-        response(res, 200, "User created successfully", {
-          mentor: insensitivementor,
-        });
-      })
-      .catch(next);
+    const errs: string[] = [];
+    const { verificationtoken } = req.params;
+    const { newpass }: { newpass: string } = data;
+    if (!newpass) errs.push("new password is required");
+    else if (typeof newpass !== "string") errs.push("Invalid password");
+    else if (newpass.length < 8)
+      errs.push("The password must contain at least 8 character");
+
+    if (errs.length) response(res, 400, "Invalid data", { errs });
+    else {
+      tokenDecoder(verificationtoken)
+        .then((decoded) => {
+          if (decoded.str2 === "MENTOR_RESET_PASSWORD") {
+            mentorModel
+              .findById(decoded._id)
+              .then((mentor) => {
+                hashPassword(newpass)
+                  .then((hashed) => {
+                    mentor.password = hashed;
+                    mentor
+                      .save()
+                      .then(() => {
+                        response(res, 200, "Password changed", {});
+                      })
+                      .catch();
+                  })
+                  .catch(next);
+              })
+              .catch(next);
+          } else if (decoded.str2 === "STUDENT_RESET_PASSWORD") {
+            // TODO:student reset password
+          } else {
+            response(res, 400, "invalid token", {
+              verificationtoken,
+            });
+          }
+        })
+        .catch(next);
+    }
   },
 };
 export default authController;
