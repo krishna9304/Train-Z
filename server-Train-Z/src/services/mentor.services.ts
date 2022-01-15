@@ -1,5 +1,6 @@
 import mentorModel, { MentorInterface } from "../database/models/mentor.model";
-import isValidMentor, {
+import {
+  isValidMentor,
   isValidMentorInterface,
 } from "../helpers/validate.helper";
 import { hashPassword } from "../helpers/password.helper";
@@ -8,9 +9,10 @@ import mail, {
   emailVerificationBody,
   resetPasswordBody,
 } from "../helpers/mailer.helper";
-import response from "../utils/response";
-import { Response } from "express";
-import e from "connect-timeout";
+import studentModel, {
+  StudentInterface,
+} from "../database/models/student.model";
+import { studentExists } from "./student.services";
 
 export const createMentor = (
   data: MentorInterface
@@ -96,7 +98,8 @@ export const sendEmailVerification = (
                     )
                   )
                     .then((_) => {
-                      const insensitivementor = insensitiveMentor(mentor);
+                      const insensitivementor: InsensitiveMentorInterface =
+                        insensitiveMentor(mentor);
                       resolve(insensitivementor);
                     })
                     .catch(reject);
@@ -109,7 +112,43 @@ export const sendEmailVerification = (
         })
         .catch(reject);
     } else if (userType === "STUDENT") {
-      // TODO: student send email verification
+      studentExists({ _id })
+        .then((exists: boolean) => {
+          if (exists) {
+            studentModel
+              .findById(_id)
+              .then((student: StudentInterface) => {
+                if (student.emailVerified) {
+                  reject({
+                    code: 400,
+                    message: "Already Verified",
+                    data: {
+                      _id,
+                    },
+                  });
+                } else {
+                  mail(
+                    student.email,
+                    emailVerificationBody(
+                      student.username.split(" ")[0],
+                      _id,
+                      userType
+                    )
+                  )
+                    .then((_) => {
+                      const insensitivestudent: InsensitiveStudentInterface =
+                        insensitiveStudent(student);
+                      resolve(insensitivestudent);
+                    })
+                    .catch(reject);
+                }
+              })
+              .catch(reject);
+          } else {
+            reject("student does not exists");
+          }
+        })
+        .catch(reject);
     } else {
       reject("Invalid user type");
     }
@@ -145,7 +184,24 @@ export const sendPasswordReset = (
   });
 };
 
-export const insensitiveMentor = (mentor: MentorInterface): any => {
+interface InsensitiveMentorInterface {
+  _id: ObjectId;
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  dpURL: string;
+  expertise: [string];
+  availability: number;
+  createdAt: Date;
+  updatedAt: Date;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+}
+
+export const insensitiveMentor = (
+  mentor: MentorInterface
+): InsensitiveMentorInterface => {
   return {
     _id: mentor._id,
     name: mentor.name,
@@ -159,5 +215,37 @@ export const insensitiveMentor = (mentor: MentorInterface): any => {
     updatedAt: mentor.updatedAt,
     emailVerified: mentor.emailVerified,
     phoneVerified: mentor.phoneVerified,
+  };
+};
+
+interface InsensitiveStudentInterface {
+  _id: ObjectId;
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  dpURL: string;
+  interest: [string];
+  createdAt: Date;
+  updatedAt: Date;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+}
+
+export const insensitiveStudent = (
+  student: StudentInterface
+): InsensitiveStudentInterface => {
+  return {
+    _id: student._id,
+    name: student.name,
+    username: student.username,
+    email: student.email,
+    phone: student.phone,
+    dpURL: student.dpURL,
+    interest: student.interest,
+    createdAt: student.createdAt,
+    updatedAt: student.updatedAt,
+    emailVerified: student.emailVerified,
+    phoneVerified: student.phoneVerified,
   };
 };

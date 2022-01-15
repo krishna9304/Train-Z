@@ -10,6 +10,7 @@ import {
   insensitiveMentor,
   sendPasswordReset,
 } from "../services/mentor.services";
+import { createStudent, studentExists } from "../services/student.services";
 import response from "../utils/response";
 
 const authController = {
@@ -37,7 +38,24 @@ const authController = {
         })
         .catch(next);
     } else if (userType === "STUDENT") {
-      //TODO: student signup
+      createStudent(data)
+        .then((student) => {
+          const token = tokenGenerator(student?._id, student?.username);
+          student
+            .save()
+            .then((_) => {
+              sendEmailVerification(student._id, userType)
+                .then((insensitivementor) => {
+                  response(res, 200, "User created successfully", {
+                    token,
+                    student: insensitivementor,
+                  });
+                })
+                .catch(next);
+            })
+            .catch(next);
+        })
+        .catch(next);
     } else {
       response(res, 400, "user type is missing", {
         data,
@@ -108,7 +126,14 @@ const authController = {
         )
         .catch(next);
     } else if (userType === "STUDENT") {
-      //TODO: student exists
+      studentExists({ username: data.username })
+        .then((exists) =>
+          response(res, 200, exists ? "User exists" : "User does not exists", {
+            exists,
+            data,
+          })
+        )
+        .catch(next);
     } else {
       response(res, 400, "user type is missing", {
         data,

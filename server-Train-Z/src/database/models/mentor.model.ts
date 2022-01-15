@@ -1,4 +1,4 @@
-import { Document, model, Number, ObjectId, Schema } from "mongoose";
+import { Document, model, ObjectId, Schema } from "mongoose";
 
 export interface MentorInterface extends Document {
   _id: ObjectId;
@@ -9,7 +9,7 @@ export interface MentorInterface extends Document {
   phone: string;
   dpURL: string;
   expertise: [string];
-  availability: Number;
+  availability: number;
   createdAt: Date;
   updatedAt: Date;
   emailVerified: boolean;
