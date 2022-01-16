@@ -19,7 +19,7 @@ const Auth = () => {
       >
         <Tab.List
           className={
-            "flex gap-2 px-1 py-1 w-full bg-sky-400 rounded-lg justify-between shadow-sky-300 shadow-lg select-none"
+            "flex gap-2 px-1 py-1 w-full rounded-lg justify-between bg-sky-400 select-none"
           }
         >
           <Tab as="div" className={"focus:outline-none flex w-full"}>

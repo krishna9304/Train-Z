@@ -1,10 +1,8 @@
-import { RadioGroup } from "@headlessui/react";
 import {
   Button,
   Checkbox,
-  FormControl,
   FormControlLabel,
-  FormLabel,
+  RadioGroup,
   Radio,
   TextField,
 } from "@mui/material";
@@ -16,7 +14,7 @@ const SignIn = () => {
   const [data, setData] = useState({
     username: "",
     password: "",
-    userType: "",
+    userType: "STUDENT",
   });
   useEffect(() => {
     console.log(data);
@@ -57,16 +55,21 @@ const SignIn = () => {
               userType: e.target.value,
             }));
           }}
+          value={data.userType}
           row
           className="w-full"
-          aria-label="usertype"
+          aria-label="usertypein"
           defaultValue="STUDENT"
-          name="usertype"
+          name="usertypein"
         >
-          <FormControlLabel value="MENTOR" control={<Radio />} label="Mentor" />
+          <FormControlLabel
+            value="MENTOR"
+            control={<Radio name="usertypein" />}
+            label="Mentor"
+          />
           <FormControlLabel
             value="STUDENT"
-            control={<Radio />}
+            control={<Radio name="usertypein" />}
             label="Student"
           />
         </RadioGroup>

@@ -19,7 +19,7 @@ const Navbar = ({ className, ...props }) => {
       <span className="space-x-4 ">
         <NavLink to="/auth">Sign In</NavLink>
         <Menu>
-          <Menu.Button>
+          <Menu.Button className={"focus:outline-none"}>
             <Avatar icon={<UserOutlined />} />
           </Menu.Button>
           <Transition
