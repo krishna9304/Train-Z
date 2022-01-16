@@ -20,12 +20,12 @@ export const isValidMentor = (
   if (!data.password) errs.push("Password is required");
   else if ((data.password + "").length < 8)
     errs.push("Password must be atleast 8 characters");
-  if (data.dpURL && !isURL(data.dpURL + "")) errs.push("Invalid DP");
-  if (typeof data.expertise !== "object") errs.push("Invalid Expertise");
-  else if (!data.expertise.length)
-    errs.push("Atleast one Expertise is required");
-  if (typeof data.availability !== "number" || !data.availability)
-    errs.push("Invalid Availability");
+  // if (data.dpURL && !isURL(data.dpURL + "")) errs.push("Invalid DP");
+  // if (typeof data.expertise !== "object") errs.push("Invalid Expertise");
+  // else if (!data.expertise.length)
+  //   errs.push("Atleast one Expertise is required");
+  // if (typeof data.availability !== "number" || !data.availability)
+  //   errs.push("Invalid Availability");
   data.createdAt = new Date();
 
   if (errs.length)

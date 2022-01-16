@@ -9,6 +9,7 @@ import timeout from "connect-timeout";
 import { ISDEV, PORT } from "./constants";
 import path from "path";
 import cors from "cors";
+import morgan from "morgan";
 
 // Main Application
 const app: Application = express();
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(timeout("120s"));
 app.use(bodyParser());
 app.use(haltOnTimedout);
+app.use(morgan("dev"));
 
 // Static file serving
 app.use("/static", express.static(path.join(__dirname, "public")));
@@ -43,7 +45,7 @@ app.use("*", timeout("1200s"), route404);
 // Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
-  response(res, 400, "Something went wrong", {
+  response(res, 200, "Something went wrong", {
     err: Array.isArray(err)
       ? err
       : typeof err === "object" && err.message

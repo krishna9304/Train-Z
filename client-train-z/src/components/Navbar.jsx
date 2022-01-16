@@ -1,6 +1,4 @@
-import { UserOutlined } from "@ant-design/icons/lib/icons";
 import { Menu, Transition } from "@headlessui/react";
-import Avatar from "antd/lib/avatar/avatar";
 import React, { Fragment } from "react";
 import { Link, NavLink } from "react-router-dom";
 
@@ -20,7 +18,7 @@ const Navbar = ({ className, ...props }) => {
         <NavLink to="/auth">Sign In</NavLink>
         <Menu>
           <Menu.Button>
-            <Avatar icon={<UserOutlined />} />
+            <div className="w-20 h-20 rounded-full"></div>
           </Menu.Button>
           <Transition
             as={Fragment}

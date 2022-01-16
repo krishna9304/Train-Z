@@ -24,7 +24,7 @@ const Mentor: Schema = new Schema({
   phone: { type: String, required: false },
   dpURL: { type: String, default: "path to some default dp for mentor" },
   expertise: [String],
-  availability: { type: Number, required: true },
+  availability: { type: Number, required: false },
   createdAt: { type: Date, required: true },
   updatedAt: { type: Date, required: false },
   emailVerified: {

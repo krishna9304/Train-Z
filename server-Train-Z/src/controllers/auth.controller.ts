@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
 import mentorModel, { MentorInterface } from "../database/models/mentor.model";
+import studentModel, {
+  StudentInterface,
+} from "../database/models/student.model";
 import { tokenDecoder, tokenGenerator } from "../helpers/jwt.helper";
 import { comparePassword, hashPassword } from "../helpers/password.helper";
 import {
@@ -9,6 +12,7 @@ import {
   sendEmailVerification,
   insensitiveMentor,
   sendPasswordReset,
+  insensitiveStudent,
 } from "../services/mentor.services";
 import { createStudent, studentExists } from "../services/student.services";
 import response from "../utils/response";
@@ -59,7 +63,7 @@ const authController = {
         })
         .catch(next);
     } else {
-      response(res, 400, "user type is missing", {
+      response(res, 200, "user type is missing", {
         data,
       });
     }
@@ -73,7 +77,7 @@ const authController = {
       mentorExists({ username })
         .then((exists) => {
           if (!exists) {
-            response(res, 403, "User not found", {
+            response(res, 200, "User not found", {
               username: username,
               password: password,
             });
@@ -94,7 +98,7 @@ const authController = {
                         insensitivementor,
                       });
                     } else {
-                      response(res, 403, "Wrong Password", {
+                      response(res, 200, "Wrong Password", {
                         username,
                         password,
                       });
@@ -109,7 +113,7 @@ const authController = {
     } else if (userType === "STUDENT") {
       //TODO: student signin
     } else {
-      response(res, 400, "user type is missing", {
+      response(res, 200, "user type is missing", {
         data,
       });
     }
@@ -137,7 +141,7 @@ const authController = {
         )
         .catch(next);
     } else {
-      response(res, 400, "user type is missing", {
+      response(res, 200, "user type is missing", {
         data,
       });
     }
@@ -145,13 +149,16 @@ const authController = {
   verifyEmail(req: Request, res: Response, next: NextFunction) {
     // @param data.userType is required to differentiate between mentor and user
     const { verificationtoken } = req.params;
+
     tokenDecoder(verificationtoken)
       .then((decoded) => {
+        console.log(decoded);
         if (decoded.str2 === "MENTOR_EMAIL_VERIFICATION") {
           mentorModel
             .findById(decoded._id)
             .then((mentor: MentorInterface) => {
               if (mentor.emailVerified) {
+                // res.redirect("http://localhost:3000/");
                 response(res, 200, "Email already verified", {
                   verificationtoken,
                 });
@@ -161,6 +168,7 @@ const authController = {
                 mentor
                   .save()
                   .then(() => {
+                    // res.redirect("http://localhost:3000/");
                     response(res, 200, "Email Verified", { insensitivementor });
                   })
                   .catch(next);
@@ -168,9 +176,32 @@ const authController = {
             })
             .catch(next);
         } else if (decoded.str2 === "STUDENT_EMAIL_VERIFICATION") {
-          //TODO: student email verification
+          studentModel
+            .findById(decoded._id)
+            .then((student: StudentInterface) => {
+              if (student.emailVerified) {
+                // res.redirect("http://localhost:3000/");
+                response(res, 200, "Email already verified", {
+                  verificationtoken,
+                });
+              } else {
+                student.emailVerified = true;
+                const insensitivestudent = insensitiveStudent(student);
+                student
+                  .save()
+                  .then(() => {
+                    // res.redirect("http://localhost:3000/");
+                    response(res, 200, "Email Verified", {
+                      insensitivestudent,
+                    });
+                  })
+                  .catch(next);
+              }
+            })
+            .catch(next);
         } else {
-          response(res, 400, "Invalid verification token", {
+          // res.redirect("http://localhost:3000/");
+          response(res, 200, "Invalid verification token", {
             verificationtoken,
           });
         }
@@ -182,7 +213,7 @@ const authController = {
     const data = req.body;
     const { userType, token } = data;
     if (!token) {
-      response(res, 403, "token is required", data);
+      response(res, 200, "token is required", data);
     }
     if (userType === "MENTOR") {
       tokenDecoder(token)
@@ -190,7 +221,7 @@ const authController = {
           mentorExists({ username: decoded.str2 })
             .then((exists) => {
               if (!exists) {
-                response(res, 403, "User not found", {
+                response(res, 200, "User not found", {
                   token,
                 });
               } else {
@@ -215,7 +246,7 @@ const authController = {
     } else if (userType === "STUDENT") {
       //TODO: student verifyJWT
     } else {
-      response(res, 400, "user type is missing", {
+      response(res, 200, "user type is missing", {
         data,
       });
     }
@@ -234,7 +265,7 @@ const authController = {
       errs.push("Invalid Mentor");
     }
     if (errs.length) {
-      response(res, 400, "Invalid data", { errs });
+      response(res, 200, "Invalid data", { errs });
     } else {
       sendEmailVerification(_id, userType)
         .then((insensitivementor) => {
@@ -259,7 +290,7 @@ const authController = {
       errs.push("Invalid Mentor");
     }
     if (errs.length) {
-      response(res, 400, "Invalid data", { errs });
+      response(res, 200, "Invalid data", { errs });
     } else {
       sendPasswordReset(_id, userType)
         .then((insensitivementor) => {
@@ -280,7 +311,7 @@ const authController = {
     else if (newpass.length < 8)
       errs.push("The password must contain at least 8 character");
 
-    if (errs.length) response(res, 400, "Invalid data", { errs });
+    if (errs.length) response(res, 200, "Invalid data", { errs });
     else {
       tokenDecoder(verificationtoken)
         .then((decoded) => {
@@ -304,7 +335,7 @@ const authController = {
           } else if (decoded.str2 === "STUDENT_RESET_PASSWORD") {
             // TODO:student reset password
           } else {
-            response(res, 400, "invalid token", {
+            response(res, 200, "invalid token", {
               verificationtoken,
             });
           }

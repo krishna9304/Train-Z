@@ -1,9 +1,15 @@
-import { Button, TextField } from "@mui/material";
+import { Button, CircularProgress, TextField } from "@mui/material";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import React, { useEffect, useState } from "react";
 import PasswordField from "./PasswordField";
+import { Config } from "../configs/server-urls";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { instantiateUser } from "../redux/slices/userSlice";
+import { useCookies } from "react-cookie";
 
 const SignUp = () => {
   const [data, setData] = useState({
@@ -14,6 +20,40 @@ const SignUp = () => {
     username: "",
     userType: "STUDENT",
   });
+  const dispatch = useDispatch();
+  const [isloading, setIsloading] = useState(false);
+  const handleClick = () => {
+    if (
+      data.name.length &&
+      data.email.length &&
+      data.password.length &&
+      data.phone.length &&
+      data.username.length
+    ) {
+      axios
+        .post(Config.SIGN_UP, data)
+        .then((res) => {
+          if (!res.data.result.data.err) {
+            setIsloading(false);
+            dispatch(
+              instantiateUser(
+                res.data.result.data.student || res.data.result.data.mentor
+              )
+            );
+            document.cookie = "jwt=" + res.data.result.data.token;
+          } else {
+            toast("Error!", { type: "error" });
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          setIsloading(false);
+        });
+    } else {
+      setIsloading(false);
+      toast("Fields can't be empty!", { type: "info" });
+    }
+  };
   return (
     <div className="w-full bg-white flex flex-col justify-center items-center gap-4">
       <TextField
@@ -96,11 +136,12 @@ const SignUp = () => {
       </RadioGroup>
       <Button
         onClick={() => {
-          console.log(data);
+          setIsloading(true);
+          handleClick();
         }}
         variant="outlined"
       >
-        Sign Up
+        {isloading ? <CircularProgress /> : "Sign Up"}
       </Button>
     </div>
   );
