@@ -23,7 +23,6 @@ export const createMentor = (
       errs,
       data: finalData,
     }: isValidMentorInterface = isValidMentor(data);
-
     if (isValid) {
       mentorExists({ username: data.username })
         .then((exists1) => {

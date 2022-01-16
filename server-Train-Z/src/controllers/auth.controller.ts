@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
 import mentorModel, { MentorInterface } from "../database/models/mentor.model";
+import studentModel, {
+  StudentInterface,
+} from "../database/models/student.model";
 import { tokenDecoder, tokenGenerator } from "../helpers/jwt.helper";
 import { comparePassword, hashPassword } from "../helpers/password.helper";
 import {
@@ -9,6 +12,7 @@ import {
   sendEmailVerification,
   insensitiveMentor,
   sendPasswordReset,
+  insensitiveStudent,
 } from "../services/mentor.services";
 import { createStudent, studentExists } from "../services/student.services";
 import response from "../utils/response";
@@ -143,8 +147,10 @@ const authController = {
   verifyEmail(req: Request, res: Response, next: NextFunction) {
     // @param data.userType is required to differentiate between mentor and user
     const { verificationtoken } = req.params;
+
     tokenDecoder(verificationtoken)
       .then((decoded) => {
+        console.log(decoded);
         if (decoded.str2 === "MENTOR_EMAIL_VERIFICATION") {
           mentorModel
             .findById(decoded._id)
@@ -166,7 +172,27 @@ const authController = {
             })
             .catch(next);
         } else if (decoded.str2 === "STUDENT_EMAIL_VERIFICATION") {
-          //TODO: student email verification
+          studentModel
+            .findById(decoded._id)
+            .then((student: StudentInterface) => {
+              if (student.emailVerified) {
+                response(res, 200, "Email already verified", {
+                  verificationtoken,
+                });
+              } else {
+                student.emailVerified = true;
+                const insensitivestudent = insensitiveStudent(student);
+                student
+                  .save()
+                  .then(() => {
+                    response(res, 200, "Email Verified", {
+                      insensitivestudent,
+                    });
+                  })
+                  .catch(next);
+              }
+            })
+            .catch(next);
         } else {
           response(res, 400, "Invalid verification token", {
             verificationtoken,

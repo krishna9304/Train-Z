@@ -8,6 +8,7 @@ import response from "./utils/response";
 import timeout from "connect-timeout";
 import { ISDEV, PORT } from "./constants";
 import path from "path";
+import morgan from "morgan";
 
 // Main Application
 const app: Application = express();
@@ -16,6 +17,7 @@ const app: Application = express();
 app.use(timeout("120s"));
 app.use(bodyParser());
 app.use(haltOnTimedout);
+app.use(morgan("dev"));
 
 // Static file serving
 app.use("/static", express.static(path.join(__dirname, "public")));
