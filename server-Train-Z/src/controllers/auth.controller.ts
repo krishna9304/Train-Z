@@ -16,9 +16,11 @@ import response from "../utils/response";
 const authController = {
   signUp(req: Request, res: Response, next: NextFunction) {
     const data = req.body;
+    console.log(data);
+
     const { userType } = data;
     // @param data.userType is required to differentiate between mentor and user
-    if (userType === "MENTOR") {
+    if (userType == "MENTOR") {
       createMentor(data)
         .then((mentor) => {
           const token = tokenGenerator(mentor?._id, mentor?.username);
@@ -37,7 +39,7 @@ const authController = {
             .catch(next);
         })
         .catch(next);
-    } else if (userType === "STUDENT") {
+    } else if (userType == "STUDENT") {
       createStudent(data)
         .then((student) => {
           const token = tokenGenerator(student?._id, student?.username);

@@ -8,11 +8,13 @@ import response from "./utils/response";
 import timeout from "connect-timeout";
 import { ISDEV, PORT } from "./constants";
 import path from "path";
+import cors from "cors";
 
 // Main Application
 const app: Application = express();
 
 // Middlewares
+app.use(cors());
 app.use(timeout("120s"));
 app.use(bodyParser());
 app.use(haltOnTimedout);
