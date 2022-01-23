@@ -13,7 +13,7 @@ import {
 } from "@mui/icons-material";
 import Message from "./Message";
 
-function getRandomColor() {
+export function getRandomColor() {
   var letters = "789ABCDEF";
   var color = "#";
   for (var i = 0; i < 6; i++) {
@@ -27,7 +27,7 @@ const MentorDashboard = () => {
   const [schedule, setSchedule] = useState([
     {
       name: "Event 0",
-      duration: 3,
+      duration: 2,
       from: 8,
     },
     {
@@ -47,7 +47,7 @@ const MentorDashboard = () => {
     },
     {
       name: "Event 4",
-      duration: 2,
+      duration: 1,
       from: 12,
     },
     {
@@ -73,7 +73,7 @@ const MentorDashboard = () => {
   ]);
 
   return (
-    <div className="w-full h-[calc(100vh-3.5remrem)] overflow-hidden flex px-10 flex-col gap-3">
+    <div className="w-full h-[calc(100vh-3.5rem)] overflow-hidden flex px-10 flex-col gap-3">
       <div className="text-5xl font-extrabold pt-6 pb-3 w-1/4 flex justify-center items-center">
         Availability
       </div>

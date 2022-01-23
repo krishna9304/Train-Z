@@ -1,18 +1,75 @@
-import React from "react";
-import MentorDashboard from "./MentorDashboard";
+import { Add, SendSharp } from "@mui/icons-material";
+import { CalendarPicker, LocalizationProvider } from "@mui/lab";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import { Avatar } from "@mui/material";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import ClassroomAvatar from "./classroom";
+import { getRandomColor } from "./MentorDashboard";
+import Message from "./Message";
 
 function StudentDashboard() {
+  const [value, setValue] = useState(new Date());
+  const [schedule, setSchedule] = useState([
+    {
+      name: "Event 0",
+      duration: 2,
+      from: 8,
+    },
+    {
+      name: "Event 1",
+      duration: 2,
+      from: 12,
+    },
+    {
+      name: "Event 2",
+      duration: 1,
+      from: 16,
+    },
+    {
+      name: "Event 3",
+      duration: 1,
+      from: 8,
+    },
+    {
+      name: "Event 4",
+      duration: 2,
+      from: 12,
+    },
+    {
+      name: "Event 5",
+      duration: 1,
+      from: 16,
+    },
+    {
+      name: "Event 6",
+      duration: 1,
+      from: 8,
+    },
+    {
+      name: "Event 7",
+      duration: 1,
+      from: 12,
+    },
+    {
+      name: "Event 8",
+      duration: 1,
+      from: 16,
+    },
+  ]);
+
+  const user = useSelector((state) => state.user.userDetails);
+
   return (
-    <div className="w-full h-[calc(100vh-3.5remrem)] overflow-hidden flex px-10 flex-col gap-3">
-      <div className="text-5xl font-extrabold pt-6 pb-3 w-1/4 flex justify-center items-center">
-        Availability
+    <div className="w-full h-[calc(100vh-3.5rem)] overflow-hidden flex px-10 flex-col gap-3">
+      <div className="text-5xl font-thin pt-6 pb-3 w-2/4 flex items-center">
+        Welcome to your dashboard, <b>{user.name.split(" ")[0]}</b>
       </div>
       <div className="flex gap-6">
         <div className="w-1/4">
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <CalendarPicker
               onChange={(data) => {
-                console.log(data);
                 setValue(data);
               }}
               date={value}
@@ -71,8 +128,9 @@ function StudentDashboard() {
                         style={{
                           background: `linear-gradient(45deg, ${getRandomColor()}, ${getRandomColor()})`,
                         }}
-                        className={`shadow-md w-full rounded-lg flex justify-center items-center text-black text-sm`}
+                        className={`shadow-md w-full gap-3 p-2 rounded-lg flex items-center text-black text-sm`}
                       >
+                        <div className="h-full w-1.5 rounded-full bg-white bg-opacity-30"></div>
                         {event.name}
                       </span>
                     </div>
@@ -83,31 +141,47 @@ function StudentDashboard() {
           </div>
         </div>
         <div className="w-1/4 rounded-md">
-          <div className="w-full h-32 bg-white border rounded-t-md">
-            <div className="text-xs font-semibold p-2 text-gray-400">
-              Your Classroom
+          <div className="w-full h-[calc(72%-4rem)] bg-gray-100">
+            <div className="w-full font-light flex justify-center items-center border h-1/12 py-3 bg-white">
+              Your Classrooms
             </div>
-          </div>
-          <div className="h-[calc(60%-4rem)] w-full bg-gray-50 p-5 rounded-b-lg flex flex-col justify-end items-end">
-            <div className="max-h-screen overflow-y-auto">
-              <Message>
-                <img
-                  src="https://cdn.dribbble.com/users/1579320/screenshots/14376775/media/245ddfc9c60c06dedfa93e3f31511aef.png?compress=1&resize=1600x1200&vertical=top"
-                  alt=""
-                />
-              </Message>
-            </div>
-            <div className="flex justify-center items-center w-full gap-2">
-              <input
-                className="w-full border border-gray-300 bg-white rounded-full outline-none p-2 px-4 text-xs font-thin"
-                placeholder="Send a Text"
+            <div className="w-full flex flex-wrap h-11/12 gap-3 p-4">
+              <ClassroomAvatar
+                style={{
+                  backgroundColor: getRandomColor(),
+                }}
+                src={"L"}
               />
-              <div className="p-1 flex justify-center items-center bg-sky-400 rounded-full">
-                <Add fontSize="small" />
-              </div>
-              <div className="py-1 px-3 flex justify-center items-center bg-sky-400 rounded-full">
-                <SendSharp fontSize={"small"} />
-              </div>
+              <ClassroomAvatar
+                style={{
+                  backgroundColor: getRandomColor(),
+                }}
+                src={"M"}
+              />
+              <ClassroomAvatar
+                style={{
+                  backgroundColor: getRandomColor(),
+                }}
+                src={"A"}
+              />
+              <ClassroomAvatar
+                style={{
+                  backgroundColor: getRandomColor(),
+                }}
+                src={"B"}
+              />
+              <ClassroomAvatar
+                style={{
+                  backgroundColor: getRandomColor(),
+                }}
+                src={"C"}
+              />
+              <ClassroomAvatar
+                style={{
+                  backgroundColor: getRandomColor(),
+                }}
+                src={"U"}
+              />
             </div>
           </div>
         </div>
