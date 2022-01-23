@@ -14,12 +14,12 @@ const Auth = () => {
     >
       <Tab.Group
         as="div"
-        className="flex flex-col justify-center items-center max-w-md h-[60vh]"
+        className="flex flex-col justify-center items-center w-96 h-[60vh]"
         defaultIndex={0}
       >
         <Tab.List
           className={
-            "flex gap-2 px-1 py-1 w-full rounded-lg justify-between bg-sky-400 select-none"
+            "flex gap-2 px-1 py-1 w-full bg-sky-400 rounded-lg justify-between shadow-sky-300 select-none"
           }
         >
           <Tab as="div" className={"focus:outline-none flex w-full"}>

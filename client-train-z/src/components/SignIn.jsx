@@ -5,9 +5,16 @@ import {
   RadioGroup,
   Radio,
   TextField,
+  CircularProgress,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import axios from "axios";
+import React, { useState } from "react";
+import { useCookies } from "react-cookie";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Config } from "../configs/server-urls";
+import { instantiateUser } from "../redux/slices/userSlice";
 import PasswordField from "./PasswordField";
 
 const SignIn = () => {
@@ -16,11 +23,33 @@ const SignIn = () => {
     password: "",
     userType: "STUDENT",
   });
-  useEffect(() => {
-    console.log(data);
-    return () => {};
-  }, [data]);
   const [remember, setRemember] = useState(true);
+  const [isloading, setIsloading] = useState(false);
+  const dispatch = useDispatch();
+  const [, setCookie] = useCookies(["jwt"]);
+  const handleClick = () => {
+    if (data.username && data.password.length >= 8) {
+      setIsloading(true);
+      axios
+        .post(Config.SIGN_IN, data)
+        .then((res) => {
+          if (res.data.res) {
+            dispatch(
+              instantiateUser({
+                userType: res.data.userinfo.userType,
+                ...res.data.userinfo.user,
+              })
+            );
+            setCookie("jwt", res.data.token);
+            toast("Sign in successful", { type: "success" });
+          } else if (res.data.errs) {
+            res.data.errs.forEach((err) => toast(err, { type: "info" }));
+          }
+          setIsloading(false);
+        })
+        .catch(console.error);
+    } else toast("Invalid info!");
+  };
   return (
     <div className="w-full flex-grow max-w-lg flex flex-col justify-around items-center">
       <div className="flex flex-col justify-center gap-4">
@@ -90,12 +119,12 @@ const SignIn = () => {
         </span>
       </div>
       <Button
-        onClick={() => {
-          console.log(data);
-        }}
+        className="w-2/5"
+        disabled={isloading}
+        onClick={handleClick}
         variant="outlined"
       >
-        Sign In
+        {isloading ? <CircularProgress size={24} /> : "Sign In"}
       </Button>
     </div>
   );

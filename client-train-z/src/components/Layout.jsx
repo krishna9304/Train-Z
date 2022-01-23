@@ -1,9 +1,14 @@
 import React from "react";
 import Navbar from "./Navbar";
-// import Footer from "../footer";
 import { useSpring, animated } from "react-spring";
 
-const Layout = ({ className, childrenClassName, children, ...props }) => {
+const Layout = ({
+  className,
+  detailedNav = false,
+  childrenClassName,
+  children,
+  ...props
+}) => {
   const spring = useSpring({
     to: {
       opacity: 1,
@@ -17,7 +22,7 @@ const Layout = ({ className, childrenClassName, children, ...props }) => {
   });
   return (
     <div {...props} className={`w-full min-h-screen mt-14 ${className}`}>
-      <Navbar className="" />
+      <Navbar detailed={detailedNav} className="" />
       <animated.div className={childrenClassName} style={spring}>
         {children}
       </animated.div>

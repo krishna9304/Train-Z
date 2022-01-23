@@ -4,16 +4,17 @@ import { Server } from "http";
 import "./database";
 import mainRouter from "./routes";
 import bodyParser from "body-parser";
-import response from "./utils/response";
 import timeout from "connect-timeout";
 import { ISDEV, PORT } from "./constants";
 import path from "path";
+import cors from "cors";
 import morgan from "morgan";
 
 // Main Application
 const app: Application = express();
 
 // Middlewares
+app.use(cors());
 app.use(timeout("120s"));
 app.use(bodyParser());
 app.use(haltOnTimedout);
@@ -27,7 +28,10 @@ function haltOnTimedout(req: Request, res: Response, next: NextFunction) {
 }
 
 app.get("/", (req: Request, res: Response, next: NextFunction) => {
-  response(res, 200, "Server running", {});
+  res.json({
+    data: {},
+    message: "Server running",
+  });
 });
 
 // Main routes
@@ -35,7 +39,7 @@ app.use("/", mainRouter);
 
 // 404 Route
 const route404 = (req: Request, res: Response, next: NextFunction) => {
-  response(res, 404, "Route not Found", {});
+  res.json({ message: "Route not Found", data: {} });
 };
 
 app.use("*", timeout("1200s"), route404);
@@ -43,8 +47,9 @@ app.use("*", timeout("1200s"), route404);
 // Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
-  response(res, 400, "Something went wrong", {
-    err: Array.isArray(err)
+  res.json({
+    message: "Something went wrong",
+    errs: Array.isArray(err)
       ? err
       : typeof err === "object" && err.message
       ? [err.message]

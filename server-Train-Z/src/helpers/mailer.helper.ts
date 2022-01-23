@@ -29,7 +29,7 @@ export const emailVerificationBody = (
               <br/>
               <div style="padding:1rem;">
                 <a
-                href="http://localhost:8080/auth/emailverification/${verificationtoken}" 
+                href="http://localhost:3000/verifyemail/?token=${verificationtoken}" 
                 style="padding:0.5rem; padding-top:0.1rem; padding-bottom:0.1rem; border-radius: 4px; background-color: #047857; color: #ffffff; text-decoration:none; font-size: 20pt" 
                 >
                   VERIFY NOW

@@ -36,12 +36,12 @@ export const createStudent = (
       studentExists({ username: data.username })
         .then((exists1) => {
           if (exists1) {
-            reject("username not available");
+            reject(new Error("username not available"));
           } else {
             studentExists({ email: data.email })
               .then((exists2) => {
                 if (exists2) {
-                  reject("Email already registered");
+                  reject(new Error("Email already registered"));
                 } else {
                   hashPassword(finalData.password + "")
                     .then((hash) => {

@@ -15,25 +15,27 @@ import {
   insensitiveStudent,
 } from "../services/mentor.services";
 import { createStudent, studentExists } from "../services/student.services";
-import response from "../utils/response";
 
 const authController = {
   signUp(req: Request, res: Response, next: NextFunction) {
     const data = req.body;
+    console.log(data);
+
     const { userType } = data;
     // @param data.userType is required to differentiate between mentor and user
-    if (userType === "MENTOR") {
+    if (userType == "MENTOR") {
       createMentor(data)
         .then((mentor) => {
-          const token = tokenGenerator(mentor?._id, mentor?.username);
+          const token = tokenGenerator(mentor?._id, "MENTOR");
           mentor
             .save()
             .then((_) => {
               sendEmailVerification(mentor._id, userType)
                 .then((insensitivementor) => {
-                  response(res, 200, "User created successfully", {
+                  res.json({
+                    res: true,
                     token,
-                    mentor: insensitivementor,
+                    userinfo: { user: insensitivementor, userType: "MENTOR" },
                   });
                 })
                 .catch(next);
@@ -41,18 +43,19 @@ const authController = {
             .catch(next);
         })
         .catch(next);
-    } else if (userType === "STUDENT") {
+    } else if (userType == "STUDENT") {
       createStudent(data)
         .then((student) => {
-          const token = tokenGenerator(student?._id, student?.username);
+          const token = tokenGenerator(student?._id, "STUDENT");
           student
             .save()
             .then((_) => {
               sendEmailVerification(student._id, userType)
-                .then((insensitivementor) => {
-                  response(res, 200, "User created successfully", {
+                .then((insensitivestudent) => {
+                  res.json({
+                    res: true,
                     token,
-                    student: insensitivementor,
+                    userinfo: { user: insensitivestudent, userType: "STUDENT" },
                   });
                 })
                 .catch(next);
@@ -61,8 +64,9 @@ const authController = {
         })
         .catch(next);
     } else {
-      response(res, 400, "user type is missing", {
-        data,
+      res.json({
+        res: false,
+        errs: ["User type is missing."],
       });
     }
   },
@@ -75,9 +79,12 @@ const authController = {
       mentorExists({ username })
         .then((exists) => {
           if (!exists) {
-            response(res, 403, "User not found", {
-              username: username,
-              password: password,
+            res.json({
+              res: false,
+              errs: ["User not found"],
+              data: {
+                username: username,
+              },
             });
           } else {
             mentorModel
@@ -86,19 +93,24 @@ const authController = {
                 comparePassword(mentor.password, password)
                   .then((same) => {
                     if (same) {
-                      const token = tokenGenerator(
-                        mentor?._id,
-                        mentor?.username
-                      );
+                      const token = tokenGenerator(mentor?._id, "MENTOR");
                       const insensitivementor = insensitiveMentor(mentor);
-                      response(res, 200, "User authenticated successfully", {
+                      res.json({
+                        message: "Authenticated successfully",
+                        res: true,
                         token,
-                        insensitivementor,
+                        userinfo: {
+                          userType: "MENTOR",
+                          user: insensitivementor,
+                        },
                       });
                     } else {
-                      response(res, 403, "Wrong Password", {
-                        username,
-                        password,
+                      res.json({
+                        res: false,
+                        errs: ["Wrong password"],
+                        data: {
+                          username,
+                        },
                       });
                     }
                   })
@@ -109,10 +121,54 @@ const authController = {
         })
         .catch(next);
     } else if (userType === "STUDENT") {
-      //TODO: student signin
+      studentExists({ username })
+        .then((exists) => {
+          if (!exists) {
+            res.json({
+              res: false,
+              errs: ["User not found"],
+              data: {
+                username: username,
+              },
+            });
+          } else {
+            studentModel
+              .findOne({ username: username })
+              .then((student: StudentInterface) => {
+                comparePassword(student.password, password)
+                  .then((same) => {
+                    if (same) {
+                      const token = tokenGenerator(student?._id, "STUDENT");
+                      const insensitivestudent = insensitiveStudent(student);
+                      res.json({
+                        message: "Authenticated successfully",
+                        res: true,
+                        token,
+                        userinfo: {
+                          userType: "STUDENT",
+                          user: insensitivestudent,
+                        },
+                      });
+                    } else {
+                      res.json({
+                        res: false,
+                        errs: ["Wrong password"],
+                        data: {
+                          username,
+                        },
+                      });
+                    }
+                  })
+                  .catch(next);
+              })
+              .catch(next);
+          }
+        })
+        .catch(next);
     } else {
-      response(res, 400, "user type is missing", {
-        data,
+      res.json({
+        res: false,
+        errs: ["User type is missing."],
       });
     }
   },
@@ -122,25 +178,40 @@ const authController = {
     const { userType } = data;
     if (userType === "MENTOR") {
       mentorExists({ username: data.username })
-        .then((exists) =>
-          response(res, 200, exists ? "User exists" : "User does not exists", {
-            exists,
-            data,
-          })
-        )
+        .then((exists) => {
+          if (exists) {
+            res.json({
+              res: true,
+              message: "User exists",
+            });
+          } else {
+            res.json({
+              res: false,
+              message: "User does not exists",
+            });
+          }
+        })
         .catch(next);
     } else if (userType === "STUDENT") {
       studentExists({ username: data.username })
-        .then((exists) =>
-          response(res, 200, exists ? "User exists" : "User does not exists", {
-            exists,
-            data,
-          })
-        )
+        .then((exists) => {
+          if (exists) {
+            res.json({
+              res: true,
+              message: "User exists",
+            });
+          } else {
+            res.json({
+              res: false,
+              message: "User does not exists",
+            });
+          }
+        })
         .catch(next);
     } else {
-      response(res, 400, "user type is missing", {
-        data,
+      res.json({
+        res: false,
+        errs: ["User type is missing."],
       });
     }
   },
@@ -156,8 +227,9 @@ const authController = {
             .findById(decoded._id)
             .then((mentor: MentorInterface) => {
               if (mentor.emailVerified) {
-                response(res, 200, "Email already verified", {
-                  verificationtoken,
+                res.json({
+                  res: false,
+                  errs: ["Email already verified"],
                 });
               } else {
                 mentor.emailVerified = true;
@@ -165,7 +237,13 @@ const authController = {
                 mentor
                   .save()
                   .then(() => {
-                    response(res, 200, "Email Verified", { insensitivementor });
+                    res.json({
+                      res: true,
+                      userinfo: {
+                        user: insensitivementor,
+                        userType: "STUDENT",
+                      },
+                    });
                   })
                   .catch(next);
               }
@@ -176,8 +254,9 @@ const authController = {
             .findById(decoded._id)
             .then((student: StudentInterface) => {
               if (student.emailVerified) {
-                response(res, 200, "Email already verified", {
-                  verificationtoken,
+                res.json({
+                  res: false,
+                  errs: ["Email already verified"],
                 });
               } else {
                 student.emailVerified = true;
@@ -185,8 +264,12 @@ const authController = {
                 student
                   .save()
                   .then(() => {
-                    response(res, 200, "Email Verified", {
-                      insensitivestudent,
+                    res.json({
+                      res: true,
+                      userinfo: {
+                        user: insensitivestudent,
+                        userType: "STUDENT",
+                      },
                     });
                   })
                   .catch(next);
@@ -194,8 +277,9 @@ const authController = {
             })
             .catch(next);
         } else {
-          response(res, 400, "Invalid verification token", {
-            verificationtoken,
+          res.json({
+            res: false,
+            errs: ["Invalid token"],
           });
         }
       })
@@ -204,45 +288,80 @@ const authController = {
   verifyJWT(req: Request, res: Response, next: NextFunction) {
     // @param data.userType is required to differentiate between mentor and user
     const data = req.body;
-    const { userType, token } = data;
+    const { token } = data;
     if (!token) {
-      response(res, 403, "token is required", data);
+      res.json({
+        res: false,
+        errs: ["Token is required"],
+      });
     }
-    if (userType === "MENTOR") {
-      tokenDecoder(token)
-        .then((decoded) => {
-          mentorExists({ username: decoded.str2 })
+    tokenDecoder(token)
+      .then((decoded) => {
+        console.log(decoded);
+        if (decoded.str2 === "MENTOR") {
+          mentorExists({ _id: decoded._id })
             .then((exists) => {
               if (!exists) {
-                response(res, 403, "User not found", {
-                  token,
+                res.json({
+                  res: false,
+                  errs: ["User not found"],
                 });
               } else {
                 mentorModel
-                  .findOne({ username: decoded.str2 })
+                  .findOne({ _id: decoded._id })
                   .then((mentor: MentorInterface) => {
-                    const newToken = tokenGenerator(
-                      mentor?._id,
-                      mentor?.username
-                    );
-                    response(res, 200, "User authenticated successfully", {
-                      newToken,
-                      mentor,
+                    const newToken = tokenGenerator(mentor?._id, "MENTOR");
+                    const insensitivementor = insensitiveMentor(mentor);
+                    res.json({
+                      res: true,
+                      token: newToken,
+                      message: "Authenticated successfully",
+                      userinfo: {
+                        userType: "MENTOR",
+                        user: insensitivementor,
+                      },
                     });
                   })
                   .catch(next);
               }
             })
             .catch(next);
-        })
-        .catch(next);
-    } else if (userType === "STUDENT") {
-      //TODO: student verifyJWT
-    } else {
-      response(res, 400, "user type is missing", {
-        data,
-      });
-    }
+        } else if (decoded.str2 === "STUDENT") {
+          studentExists({ _id: decoded._id })
+            .then((exists) => {
+              if (!exists) {
+                res.json({
+                  res: false,
+                  errs: ["User not found"],
+                });
+              } else {
+                studentModel
+                  .findOne({ _id: decoded._id })
+                  .then((student: StudentInterface) => {
+                    const newToken = tokenGenerator(student?._id, "STUDENT");
+                    const insensitivestudent = insensitiveStudent(student);
+                    res.json({
+                      res: true,
+                      token: newToken,
+                      message: "Authenticated successfully",
+                      userinfo: {
+                        userType: "STUDENT",
+                        user: insensitivestudent,
+                      },
+                    });
+                  })
+                  .catch(next);
+              }
+            })
+            .catch(next);
+        } else {
+          res.json({
+            res: false,
+            errs: ["User type is missing."],
+          });
+        }
+      })
+      .catch(next);
   },
   resendEmailVerification(req: Request, res: Response, next: NextFunction) {
     const { _id, userType } = req.body;
@@ -258,12 +377,19 @@ const authController = {
       errs.push("Invalid Mentor");
     }
     if (errs.length) {
-      response(res, 400, "Invalid data", { errs });
+      res.json({
+        res: false,
+        errs,
+      });
     } else {
       sendEmailVerification(_id, userType)
         .then((insensitivementor) => {
-          response(res, 200, "User created successfully", {
-            mentor: insensitivementor,
+          res.json({
+            res: true,
+            userinfo: {
+              userType: "MENTOR",
+              user: insensitivementor,
+            },
           });
         })
         .catch(next);
@@ -283,12 +409,20 @@ const authController = {
       errs.push("Invalid Mentor");
     }
     if (errs.length) {
-      response(res, 400, "Invalid data", { errs });
+      res.json({
+        res: false,
+        errs,
+      });
     } else {
       sendPasswordReset(_id, userType)
         .then((insensitivementor) => {
-          response(res, 200, "Email sent", {
-            mentor: insensitivementor,
+          res.json({
+            res: true,
+            message: "Email sent",
+            userinfo: {
+              userType: "MENTOR",
+              user: insensitivementor,
+            },
           });
         })
         .catch(next);
@@ -304,7 +438,11 @@ const authController = {
     else if (newpass.length < 8)
       errs.push("The password must contain at least 8 character");
 
-    if (errs.length) response(res, 400, "Invalid data", { errs });
+    if (errs.length)
+      res.json({
+        res: false,
+        errs,
+      });
     else {
       tokenDecoder(verificationtoken)
         .then((decoded) => {
@@ -318,7 +456,10 @@ const authController = {
                     mentor
                       .save()
                       .then(() => {
-                        response(res, 200, "Password changed", {});
+                        res.json({
+                          res: true,
+                          message: "Password changed",
+                        });
                       })
                       .catch();
                   })
@@ -328,7 +469,9 @@ const authController = {
           } else if (decoded.str2 === "STUDENT_RESET_PASSWORD") {
             // TODO:student reset password
           } else {
-            response(res, 400, "invalid token", {
+            res.json({
+              res: false,
+              errs: ["Invalid token"],
               verificationtoken,
             });
           }
