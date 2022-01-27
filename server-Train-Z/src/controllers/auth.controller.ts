@@ -15,6 +15,7 @@ import {
   insensitiveStudent,
 } from "../services/mentor.services";
 import { createStudent, studentExists } from "../services/student.services";
+import { createSchedule } from "./schedule.controller";
 
 const authController = {
   signUp(req: Request, res: Response, next: NextFunction) {
@@ -32,11 +33,18 @@ const authController = {
             .then((_) => {
               sendEmailVerification(mentor._id, userType)
                 .then((insensitivementor) => {
-                  res.json({
-                    res: true,
-                    token,
-                    userinfo: { user: insensitivementor, userType: "MENTOR" },
-                  });
+                  createSchedule({ userId: mentor._id, userType })
+                    .then(() => {
+                      res.json({
+                        res: true,
+                        token,
+                        userinfo: {
+                          user: insensitivementor,
+                          userType: "MENTOR",
+                        },
+                      });
+                    })
+                    .catch(next);
                 })
                 .catch(next);
             })

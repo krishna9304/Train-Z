@@ -34,18 +34,18 @@ const SignIn = () => {
         .post(Config.SIGN_IN, data)
         .then((res) => {
           if (res.data.res) {
+            setCookie("jwt", res.data.token);
             dispatch(
               instantiateUser({
                 userType: res.data.userinfo.userType,
                 ...res.data.userinfo.user,
               })
             );
-            setCookie("jwt", res.data.token);
             toast("Sign in successful", { type: "success" });
           } else if (res.data.errs) {
             res.data.errs.forEach((err) => toast(err, { type: "info" }));
+            setIsloading(false);
           }
-          setIsloading(false);
         })
         .catch(console.error);
     } else toast("Invalid info!");

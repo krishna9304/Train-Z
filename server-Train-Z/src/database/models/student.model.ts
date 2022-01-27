@@ -15,7 +15,7 @@ export interface StudentInterface extends Document {
   phoneVerified: boolean;
 }
 
-const Student = new Schema({
+const Student: Schema = new Schema({
   name: { type: String, required: true },
   username: { type: String, required: true },
   email: { type: String, required: true },

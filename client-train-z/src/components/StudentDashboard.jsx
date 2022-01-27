@@ -4,9 +4,10 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import { Avatar } from "@mui/material";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import ClassroomAvatar from "./classroom";
-import { getRandomColor } from "./MentorDashboard";
+import { getRandomColor } from "../utils/randomcolors";
+import ClassroomAvatar from "./Classroom";
 import Message from "./Message";
+import Schedule from "./Schedule";
 
 function StudentDashboard() {
   const [value, setValue] = useState(new Date());
@@ -104,40 +105,7 @@ function StudentDashboard() {
             </span>
           </div>
           <div className="h-3/5 w-full bg-gray-200 p-5 rounded-b-lg">
-            <div className="w-full h-full overflow-auto shadow-md bg-white rounded-3xl flex">
-              <div className="w-1/6">
-                {[8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7].map((time) => {
-                  return (
-                    <div className="h-20 w-full text-xs flex justify-center p-5 border-r border-b text-gray-400">
-                      {(time + "").length === 1 ? `0${time}` : time}:00
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="w-5/6">
-                {schedule.map((event) => {
-                  console.log(`h-[${event.duration * 20}rem]`);
-                  return (
-                    <div
-                      style={{
-                        height: `${event.duration * 5}rem`,
-                      }}
-                      className={`py-2 px-4 transform hover:p-0 rounded-lg duration-200 w-full text-xs flex justify-center border-r border-b text-gray-400`}
-                    >
-                      <span
-                        style={{
-                          background: `linear-gradient(45deg, ${getRandomColor()}, ${getRandomColor()})`,
-                        }}
-                        className={`shadow-md w-full gap-3 p-2 rounded-lg flex items-center text-black text-sm`}
-                      >
-                        <div className="h-full w-1.5 rounded-full bg-white bg-opacity-30"></div>
-                        {event.name}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <Schedule schedule={schedule} />
           </div>
         </div>
         <div className="w-1/4 rounded-md">
@@ -145,7 +113,7 @@ function StudentDashboard() {
             <div className="w-full font-light flex justify-center items-center border h-1/12 py-3 bg-white">
               Your Classrooms
             </div>
-            <div className="w-full flex flex-wrap h-11/12 gap-3 p-4">
+            <div className="w-full flex flex-wrap h-11/12 gap-3 p-4 justify-between">
               <ClassroomAvatar
                 style={{
                   backgroundColor: getRandomColor(),

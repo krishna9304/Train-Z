@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import { useDispatch } from "react-redux";
 import { instantiateUser } from "./redux/slices/userSlice";
 import Dashboard from "./pages/Dashboard";
+import EditSchedule from "./pages/EditSchedule";
 
 const App = () => {
   const state = useSelector((state) => state);
@@ -57,6 +58,8 @@ const App = () => {
             path="/user/dashboard"
             element={state.user.userDetails ? <Dashboard /> : <Auth />}
           />
+          <Route path="/schedule/edit" element={<EditSchedule />} />
+          <Route path="/class/:id" element={<NotFound />} /> //Only for mentor
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
